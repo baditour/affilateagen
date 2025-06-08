@@ -6,12 +6,8 @@ import {
   ScrollView,
   StyleSheet,
   Linking,
-  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFirebase } from "./context/FirebaseContext";
-import { useAgentStats } from "./hooks/useFirebaseData";
-import FirebaseAuth from "./components/FirebaseAuth";
 
 const styles = StyleSheet.create({
   container: {
@@ -144,29 +140,11 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function HomeScreen() {
-  const { user, loading, agent } = useFirebase();
-  const stats = useAgentStats();
-
-  // Show loading screen while checking auth
-  if (loading) {
-    return (
-      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#059669" />
-        <Text style={{ marginTop: 16, fontSize: 16, color: '#6b7280' }}>
-          Loading...
-        </Text>
-      </SafeAreaView>
-    );
-  }
-
-  // Show auth screen if not logged in
-  if (!user || !agent) {
-    return <FirebaseAuth />;
-  }
+export default function SimpleHomeScreen() {
+  const [activeSection, setActiveSection] = useState('home');
 
   const handleWhatsAppInvite = () => {
-    const message = `Join me as an Umrah travel agent and earn great commissions! 🕋✈️\n\nI'm earning $${stats.totalCommission.toFixed(2)} with ${stats.totalLeads} leads!`;
+    const message = "Join me as an Umrah travel agent and earn great commissions! 🕋✈️";
     const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
     Linking.openURL(url).catch(() => {
       Linking.openURL(`https://wa.me/?text=${encodeURIComponent(message)}`);
@@ -178,20 +156,20 @@ export default function HomeScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>🕋 Welcome, {agent.name}!</Text>
+          <Text style={styles.headerTitle}>🕋 Umrah Agent Hub</Text>
           <Text style={styles.headerSubtitle}>
-            Your Umrah Agent Dashboard
+            Welcome back! Ready to grow your network?
           </Text>
         </View>
 
         {/* Stats Cards */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>${stats.totalCommission.toFixed(2)}</Text>
+            <Text style={styles.statValue}>$2,450</Text>
             <Text style={styles.statLabel}>Total Commission</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.totalLeads}</Text>
+            <Text style={styles.statValue}>47</Text>
             <Text style={styles.statLabel}>Active Leads</Text>
           </View>
         </View>
@@ -199,7 +177,7 @@ export default function HomeScreen() {
         {/* Quick Actions */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
-
+          
           <View style={styles.actionCard}>
             <Text style={styles.actionTitle}>📢 Promotional Tools</Text>
             <Text style={styles.actionDescription}>

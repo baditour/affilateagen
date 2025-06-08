@@ -12,10 +12,33 @@
     "lint": "expo lint"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.(test|spec).(js|jsx|ts|tsx)"
+    ],
+    "collectCoverageFrom": [
+      "app/**/*.{js,jsx,ts,tsx}",
+      "!app/**/*.d.ts",
+      "!app/**/index.{js,jsx,ts,tsx}"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    },
+    "moduleNameMapping": {
+      "^@/(.*)$": "<rootDir>/app/$1"
+    }
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "autoprefixer": "^10.4.20",
@@ -47,11 +70,11 @@
     "react-native-svg": "^15.11.2",
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
-    "tailwindcss": "^3.4.17",
-    "tempo-devtools": "^2.0.106"
+    "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@testing-library/react-native": "^12.4.2",
     "@types/jest": "^29.5.12",
     "@types/react": "~19.0.10",
     "@types/react-test-renderer": "^18.3.0",

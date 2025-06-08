@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test User Management - Umrah Agent Pro</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f8fafc;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            color: #1f2937;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+        }
+        .user-table th,
+        .user-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .user-table th {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-left: 4px solid #10b981;
+            z-index: 1001;
+        }
+        .debug-panel {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test User Management</h1>
+        <p>Testing fungsi kelola user secara terpisah untuk debugging</p>
+        
+        <div class="debug-panel" id="debugPanel">
+            <strong>Debug Info:</strong><br>
+            <span id="debugInfo">Initializing...</span>
+        </div>
+
+        <div id="userForm">
+            <h3>➕ Tambah User Baru</h3>
+            <div class="form-group">
+                <label class="form-label">Nama:</label>
+                <input type="text" id="userName" class="form-input" placeholder="Masukkan nama user">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email:</label>
+                <input type="email" id="userEmail" class="form-input" placeholder="Masukkan email user">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Role:</label>
+                <select id="userRole" class="form-input">
+                    <option value="agent">Agent</option>
+                    <option value="admin">Admin</option>
+                    <option value="manager">Manager</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="addUser()">💾 Tambah User</button>
+            <button class="btn btn-secondary" onclick="clearForm()">🔄 Clear Form</button>
+        </div>
+
+        <table class="user-table" id="userTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nama</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <!-- Users will be added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Simple user management without React for debugging
+        let users = [
+            { id: 1, name: 'Ahmad Rahman', email: 'ahmad@example.com', role: 'agent', status: 'active' },
+            { id: 2, name: 'Siti Nurhaliza', email: 'siti@example.com', role: 'agent', status: 'pending' }
+        ];
+        let nextId = 3;
+
+        function updateDebugInfo(message) {
+            const debugInfo = document.getElementById('debugInfo');
+            const timestamp = new Date().toLocaleTimeString();
+            debugInfo.innerHTML += `<br>[${timestamp}] ${message}`;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function showNotification(message) {
+            // Remove existing notification
+            const existing = document.querySelector('.notification');
+            if (existing) {
+                existing.remove();
+            }
+
+            // Create new notification
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `<p style="margin: 0; color: #1f2937; font-weight: 600;">${message}</p>`;
+            document.body.appendChild(notification);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+
+            updateDebugInfo(`Notification: ${message}`);
+        }
+
+        function renderUserTable() {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td><span class="status-badge status-${user.status}">${user.status}</span></td>
+                    <td>
+                        <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-right: 0.5rem;" onclick="activateUser(${user.id})">
+                            ${user.status === 'pending' ? 'Aktifkan' : 'Edit'}
+                        </button>
+                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: #ef4444;" onclick="deleteUser(${user.id})">
+                            Hapus
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            updateDebugInfo(`Table rendered with ${users.length} users`);
+        }
+
+        function addUser() {
+            const name = document.getElementById('userName').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            const role = document.getElementById('userRole').value;
+
+            updateDebugInfo(`Attempting to add user: ${name}, ${email}, ${role}`);
+
+            // Validation
+            if (!name) {
+                showNotification('❌ Nama harus diisi!');
+                return;
+            }
+
+            if (!email) {
+                showNotification('❌ Email harus diisi!');
+                return;
+            }
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showNotification('❌ Format email tidak valid!');
+                return;
+            }
+
+            // Check duplicate email
+            const existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+            if (existingUser) {
+                showNotification('❌ Email sudah digunakan!');
+                return;
+            }
+
+            // Add user
+            const newUser = {
+                id: nextId++,
+                name: name,
+                email: email,
+                role: role,
+                status: 'pending'
+            };
+
+            users.push(newUser);
+            updateDebugInfo(`User added successfully: ${JSON.stringify(newUser)}`);
+            
+            renderUserTable();
+            clearForm();
+            showNotification(`✅ User ${name} berhasil ditambahkan!`);
+        }
+
+        function clearForm() {
+            document.getElementById('userName').value = '';
+            document.getElementById('userEmail').value = '';
+            document.getElementById('userRole').value = 'agent';
+            updateDebugInfo('Form cleared');
+        }
+
+        function activateUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (user) {
+                if (user.status === 'pending') {
+                    user.status = 'active';
+                    renderUserTable();
+                    showNotification(`✅ User ${user.name} diaktifkan!`);
+                    updateDebugInfo(`User ${userId} activated`);
+                } else {
+                    showNotification(`ℹ️ User ${user.name} sudah aktif`);
+                }
+            }
+        }
+
+        function deleteUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (user && confirm(`Apakah Anda yakin ingin menghapus user ${user.name}?`)) {
+                users = users.filter(u => u.id !== userId);
+                renderUserTable();
+                showNotification(`🗑️ User ${user.name} dihapus!`);
+                updateDebugInfo(`User ${userId} deleted`);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDebugInfo('Page loaded');
+            renderUserTable();
+            updateDebugInfo('Initial setup complete');
+        });
+
+        // Test functions for console
+        window.testAddUser = function() {
+            document.getElementById('userName').value = 'Test User';
+            document.getElementById('userEmail').value = 'test@example.com';
+            document.getElementById('userRole').value = 'agent';
+            addUser();
+        };
+
+        window.showUsers = function() {
+            console.log('Current users:', users);
+            return users;
+        };
+    </script>
+</body>
+</html>
